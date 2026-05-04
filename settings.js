@@ -5,4 +5,10 @@ module.exports = {
     sessionSecretUpcoming: process.env.SESSION_SECRET_UPCOMING,
     sessionSecretFallback: process.env.SESSION_SECRET_FALLBACK,
   },
+  apis: {
+    clsi: {
+      url: 'http://127.0.0.1:3013',
+      downloadHost: 'http://127.0.0.1',
+    },
+  },
 }

@@ -1,45 +1,74 @@
-# Overleaf Docker Image
+# Overleaf Docker Local
 
-**THIS REPOSITORY HAS BEEN MERGED INTO https://github.com/overleaf/overleaf .**
+Fork local para buildar e rodar o Overleaf Community Edition em Docker.
 
-This is the source for building the Overleaf community-edition docker image.
+Este fork foi ajustado para o fluxo local:
 
+- Ubuntu 24.04 na imagem base.
+- Node instalado via nvm.
+- Build da imagem community com Yarn workspaces.
+- `docker-compose.yml` com Overleaf, MongoDB, Redis e Postgres.
+- MongoDB em replica set single-node para suportar history/project creation.
+- Serviços `history-v1` e `project-history` habilitados.
+- Emails confirmados automaticamente no ambiente local.
+- Saida de compilacao LaTeX servida corretamente pelo nginx interno.
 
-## End-User Install
-Please see the [offical wiki for install
-guides](https://github.com/overleaf/overleaf/wiki)
+## Build
 
+```sh
+make build-base
+make build-community
+```
 
-## Development
+## Subir Localmente
 
-This repo contains two dockerfiles, `Dockerfile-base`, which builds the
-`sharelatex/sharelatex-base` image, and `Dockerfile` which builds the
-`sharelatex/sharelatex` (or "community") image.
+```sh
+SHARELATEX_PORT=8080 docker compose up -d
+```
 
-The Base image generally contains the basic dependencies like `wget` and
-`aspell`, plus `texlive`. We split this out because it's a pretty heavy set of
-dependencies, and it's nice to not have to rebuild all of that every time.
+Acesse:
 
-The `sharelatex/sharelatex` image extends the base image and adds the actual Overleaf code
-and services.
+```text
+http://localhost:8080
+```
 
-Use `make build-base` and `make build-community` to build these images.
+## Login Local
 
+Crie ou resete usuarios usando os scripts/admin tools do proprio container
+Overleaf em execucao.
 
-### How the Overleaf code gets here
+## Servicos Internos
 
-This repo uses [the public Overleaf
-repository](https://github.com/overleaf/overleaf), which used to be the main
-public source for the Overleaf system.
+O container principal roda os servicos via runit. Os principais para este fork:
 
-That repo is cloned down into the docker image, and a script then installs all
-the services. 
+- `web-sharelatex`
+- `clsi-sharelatex`
+- `project-history-sharelatex`
+- `history-v1-sharelatex`
+- `document-updater-sharelatex`
+- `real-time-sharelatex`
+- `filestore-sharelatex`
+- `docstore-sharelatex`
+- `email-autoconfirm-sharelatex`
+- `nginx`
 
+Checagem rapida:
 
-### How services run inside the container
+```sh
+docker compose exec sharelatex sv status /etc/service/*
+```
 
-We use the [Phusion base-image](https://github.com/phusion/baseimage-docker)
-(which is extended by our `base` image) to provide us with a VM-like container
-in which to run the Overleaf services. Baseimage uses the `runit` service
-manager to manage services, and we add our init-scripts from the `./runit`
-folder.
+## Compilacao LaTeX
+
+O CLSI escuta internamente em `127.0.0.1:3013`.
+
+O web usa esse servico para compilar e o nginx interno serve os arquivos de
+saida em rotas como:
+
+```text
+/project/<project-id>/build/<build-id>/output/output.pdf
+/project/<project-id>/user/<user-id>/build/<build-id>/output/output.pdf
+```
+
+Isso evita o erro de renderizacao causado por tentativa de buscar o PDF em uma
+porta interna incorreta.
