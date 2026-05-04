@@ -2,31 +2,55 @@
 # Overleaf Base Image (sharelatex/sharelatex-base)
 # --------------------------------------------------
 
-FROM phusion/baseimage:0.11
+FROM phusion/baseimage:noble-1.0.0
 
-ENV baseDir .
+ENV baseDir=.
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NVM_DIR=/usr/local/nvm
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+ARG UBUNTU_MIRROR=http://br.archive.ubuntu.com/ubuntu
+ARG NVM_VERSION=v0.40.3
+ARG NODE_VERSION=node
 
 
 # Install dependencies
 # --------------------
-RUN apt-get update \
-&&  apt-get install -y \
-      build-essential wget net-tools unzip time imagemagick optipng strace nginx git python zlib1g-dev libpcre3-dev \
+RUN sed -i \
+      -e "s|http://archive.ubuntu.com/ubuntu/|${UBUNTU_MIRROR}/|g" \
+      -e "s|http://security.ubuntu.com/ubuntu/|${UBUNTU_MIRROR}/|g" \
+      /etc/apt/sources.list.d/ubuntu.sources \
+&&  apt-get -o Acquire::Retries=5 update \
+&&  apt-get install -y --no-install-recommends \
+      build-essential wget net-tools unzip time imagemagick optipng strace nginx git python-is-python3 zlib1g-dev libpcre3-dev \
+      ca-certificates curl xz-utils \
       qpdf \
       aspell aspell-en aspell-af aspell-am aspell-ar aspell-ar-large aspell-bg aspell-bn aspell-br aspell-ca aspell-cs aspell-cy aspell-da aspell-de aspell-el aspell-eo aspell-es aspell-et aspell-eu-es aspell-fa aspell-fo aspell-fr aspell-ga aspell-gl-minimos aspell-gu aspell-he aspell-hi aspell-hr aspell-hsb aspell-hu aspell-hy aspell-id aspell-is aspell-it aspell-kk aspell-kn aspell-ku aspell-lt aspell-lv aspell-ml aspell-mr aspell-nl aspell-nr aspell-ns  aspell-pa aspell-pl aspell-pt aspell-pt-br aspell-ro aspell-ru aspell-sk aspell-sl aspell-ss aspell-st aspell-sv aspell-tl aspell-tn aspell-ts aspell-uk aspell-uz aspell-xh aspell-zu \
-    \
-# install Node.JS 10
-&&  curl -sSL https://deb.nodesource.com/setup_10.x | bash - \
-&&  apt-get install -y nodejs \
-    \
 &&  rm -rf \
 # We are adding a custom nginx config in the main Dockerfile.
       /etc/nginx/nginx.conf \
       /etc/nginx/sites-enabled/default \
       /var/lib/apt/lists/*
 
+# Install Node.JS with nvm
+# ------------------------
+RUN mkdir -p "${NVM_DIR}" \
+&&  curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" \
+      | PROFILE=/dev/null bash \
+&&  source "${NVM_DIR}/nvm.sh" \
+&&  nvm install "${NODE_VERSION}" \
+&&  nvm alias default "${NODE_VERSION}" \
+&&  resolved_version="$(node -p 'process.version')" \
+&&  ln -sfn "${NVM_DIR}/versions/node/${resolved_version}" "${NVM_DIR}/current" \
+&&  node --version \
+&&  npm --version \
+&&  rm -rf /root/.cache /root/.npm
+
 # Install Grunt
 # ------------
+ENV PATH="${NVM_DIR}/current/bin:${PATH}"
+
 RUN npm install -g \
       grunt-cli \
 &&  rm -rf /root/.npm
@@ -41,7 +65,7 @@ RUN npm install -g \
 #     -f Dockerfile-base -t sharelatex/sharelatex-base .
 ARG TEXLIVE_MIRROR=http://mirror.ctan.org/systems/texlive/tlnet
 
-ENV PATH "${PATH}:/usr/local/texlive/2019/bin/x86_64-linux"
+ENV PATH="${NVM_DIR}/current/bin:${PATH}:/usr/local/texlive/current/bin/x86_64-linux"
 
 RUN mkdir /install-tl-unx \
 &&  curl -sSL \
@@ -57,6 +81,8 @@ RUN mkdir /install-tl-unx \
       -profile /install-tl-unx/texlive.profile \
       -repository ${TEXLIVE_MIRROR} \
     \
+&&  texlive_root="$(find /usr/local/texlive -mindepth 1 -maxdepth 1 -type d -regextype posix-extended -regex '.*/[0-9]+' | sort | tail -n 1)" \
+&&  ln -sfn "${texlive_root}" /usr/local/texlive/current \
 &&  tlmgr install --repository ${TEXLIVE_MIRROR} \
       latexmk \
       texcount \
