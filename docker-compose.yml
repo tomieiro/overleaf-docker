@@ -1,0 +1,61 @@
+services:
+  sharelatex:
+    image: sharelatex/sharelatex:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "${SHARELATEX_PORT:-80}:80"
+    environment:
+      SHARELATEX_APP_NAME: "Overleaf Community Edition"
+      SESSION_SECRET: "${SESSION_SECRET:-change-this-session-secret-in-production}"
+      SHARELATEX_MONGO_URL: "mongodb://mongo/sharelatex"
+      MONGO_URL: "mongodb://mongo/sharelatex"
+      MONGO_HOST: "mongo"
+      MONGO_CONNECTION_STRING: "mongodb://mongo/sharelatex"
+      SHARELATEX_REDIS_HOST: "redis"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      SHARELATEX_REDIS_PORT: "6379"
+    volumes:
+      - sharelatex-data:/var/lib/sharelatex
+      - sharelatex-web-data:/var/www/sharelatex/services/web/data
+      - sharelatex-clsi-data:/var/www/sharelatex/services/clsi
+
+  mongo:
+    image: mongo:6
+    command: ["mongod", "--quiet"]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' | grep 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis:7
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - redis-data:/data
+
+volumes:
+  sharelatex-data:
+  sharelatex-web-data:
+  sharelatex-clsi-data:
+  mongo-data:
+  redis-data:

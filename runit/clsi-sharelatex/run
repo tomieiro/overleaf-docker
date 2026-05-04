@@ -1,5 +1,6 @@
 #!/bin/bash
-export SHARELATEX_CONFIG=/etc/sharelatex/settings.coffee
+export SHARELATEX_CONFIG=/etc/sharelatex/settings.js
+export SESSION_SECRET="${SESSION_SECRET:-change-this-session-secret-in-production}"
 
 NODE_PARAMS=""
 if [ "$DEBUG_NODE" == "true" ]; then
@@ -22,11 +23,13 @@ SYNCTEX=/var/lib/sharelatex/bin/synctex
 if [ ! -f "$SYNCTEX" ]; then
     if [ "$DISABLE_SYNCTEX_BINARY_COPY" == "true" ]; then
         echo ">> Copy of synctex executable disabled by DISABLE_SYNCTEX_BINARY_COPY flag, feature may not work"
-    else
+    elif [ -f /var/www/sharelatex/clsi/bin/synctex ]; then
         echo ">> Copying synctex executable to the host"
         mkdir -p $(dirname $SYNCTEX )
         cp /var/www/sharelatex/clsi/bin/synctex $SYNCTEX
+    else
+        echo ">> synctex executable not found, skipping copy"
     fi
 fi
 
-exec /sbin/setuser www-data /usr/bin/node $NODE_PARAMS /var/www/sharelatex/clsi/app.js >> /var/log/sharelatex/clsi.log 2>&1
+exec /sbin/setuser www-data env NODE_OPTIONS="$NODE_PARAMS" /usr/bin/yarn --cwd /var/www/sharelatex workspace @overleaf/clsi start >> /var/log/sharelatex/clsi.log 2>&1

@@ -1,3 +1,4 @@
 #!/bin/bash
-export SHARELATEX_CONFIG=/etc/sharelatex/settings.coffee
-exec /sbin/setuser www-data /usr/bin/node /var/www/sharelatex/real-time/app.js >> /var/log/sharelatex/real-time.log 2>&1
+export SHARELATEX_CONFIG=/etc/sharelatex/settings.js
+export SESSION_SECRET="${SESSION_SECRET:-change-this-session-secret-in-production}"
+exec /sbin/setuser www-data /usr/bin/yarn --cwd /var/www/sharelatex workspace @overleaf/real-time start >> /var/log/sharelatex/real-time.log 2>&1
