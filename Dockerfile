@@ -93,6 +93,8 @@ COPY ${baseDir}/settings.js /etc/sharelatex/settings.js
 
 # Set Environment Variables
 # --------------------------------
+ENV NODE_ENV=production
+
 ENV WEB_API_USER="sharelatex"
 
 ENV SHARELATEX_APP_NAME="Overleaf Community Edition"
