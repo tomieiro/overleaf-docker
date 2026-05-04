@@ -85,6 +85,8 @@ RUN mkdir /install-tl-unx \
 &&  ln -sfn "${texlive_root}" /usr/local/texlive/current \
 &&  tlmgr install --repository ${TEXLIVE_MIRROR} \
       latexmk \
+      babel-portuges \
+      setspace \
       texcount \
     \
 &&  rm -rf /install-tl-unx
