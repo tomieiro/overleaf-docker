@@ -1,0 +1,16 @@
+#!/bin/bash
+export SHARELATEX_CONFIG=/etc/sharelatex/settings.js
+export SESSION_SECRET="${SESSION_SECRET:-change-this-session-secret-in-production}"
+export HISTORY_CONNECTION_STRING="${HISTORY_CONNECTION_STRING:-postgres://overleaf:overleaf@postgres/overleaf_history}"
+export HISTORY_REDIS_HOST="${HISTORY_REDIS_HOST:-${REDIS_HOST:-redis}}"
+export QUEUES_REDIS_HOST="${QUEUES_REDIS_HOST:-${REDIS_HOST:-redis}}"
+export PERSISTOR_BACKEND="${PERSISTOR_BACKEND:-fs}"
+export OVERLEAF_EDITOR_BLOBS_BUCKET="${OVERLEAF_EDITOR_BLOBS_BUCKET:-/var/lib/sharelatex/history/blobs}"
+export OVERLEAF_EDITOR_PROJECT_BLOBS_BUCKET="${OVERLEAF_EDITOR_PROJECT_BLOBS_BUCKET:-/var/lib/sharelatex/history/project-blobs}"
+export OVERLEAF_EDITOR_CHUNKS_BUCKET="${OVERLEAF_EDITOR_CHUNKS_BUCKET:-/var/lib/sharelatex/history/chunks}"
+export OVERLEAF_EDITOR_ZIPS_BUCKET="${OVERLEAF_EDITOR_ZIPS_BUCKET:-/var/lib/sharelatex/history/zips}"
+export STAGING_PASSWORD="${STAGING_PASSWORD:-password}"
+export OT_JWT_AUTH_KEY="${OT_JWT_AUTH_KEY:-secureKey}"
+export OT_JWT_AUTH_ALG="${OT_JWT_AUTH_ALG:-HS256}"
+
+exec /sbin/setuser www-data /usr/bin/yarn --cwd /var/www/sharelatex workspace overleaf-editor start >> /var/log/sharelatex/history-v1.log 2>&1

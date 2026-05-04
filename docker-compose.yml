@@ -7,6 +7,8 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
     ports:
@@ -15,14 +17,28 @@ services:
       SHARELATEX_APP_NAME: "Overleaf Community Edition"
       NODE_ENV: "production"
       SESSION_SECRET: "${SESSION_SECRET:-change-this-session-secret-in-production}"
-      SHARELATEX_MONGO_URL: "mongodb://mongo/sharelatex"
-      MONGO_URL: "mongodb://mongo/sharelatex"
+      SHARELATEX_MONGO_URL: "mongodb://mongo/sharelatex?replicaSet=rs0"
+      MONGO_URL: "mongodb://mongo/sharelatex?replicaSet=rs0"
       MONGO_HOST: "mongo"
-      MONGO_CONNECTION_STRING: "mongodb://mongo/sharelatex"
+      MONGO_CONNECTION_STRING: "mongodb://mongo/sharelatex?replicaSet=rs0"
       SHARELATEX_REDIS_HOST: "redis"
       REDIS_HOST: "redis"
       REDIS_PORT: "6379"
       SHARELATEX_REDIS_PORT: "6379"
+      HISTORY_CONNECTION_STRING: "postgres://overleaf:overleaf@postgres/overleaf_history"
+      HISTORY_REDIS_HOST: "redis"
+      QUEUES_REDIS_HOST: "redis"
+      PERSISTOR_BACKEND: "fs"
+      OVERLEAF_EDITOR_BLOBS_BUCKET: "/var/lib/sharelatex/history/blobs"
+      OVERLEAF_EDITOR_PROJECT_BLOBS_BUCKET: "/var/lib/sharelatex/history/project-blobs"
+      OVERLEAF_EDITOR_CHUNKS_BUCKET: "/var/lib/sharelatex/history/chunks"
+      OVERLEAF_EDITOR_ZIPS_BUCKET: "/var/lib/sharelatex/history/zips"
+      STAGING_PASSWORD: "password"
+      OT_JWT_AUTH_KEY: "secureKey"
+      OT_JWT_AUTH_ALG: "HS256"
+      V1_HISTORY_PASSWORD: "password"
+      V1_HISTORY_HOST: "127.0.0.1"
+      V1_HISTORY_PORT: "3100"
     volumes:
       - sharelatex-data:/var/lib/sharelatex
       - sharelatex-web-data:/var/www/sharelatex/services/web/data
@@ -30,12 +46,12 @@ services:
 
   mongo:
     image: mongo:6
-    command: ["mongod", "--quiet"]
+    command: ["mongod", "--quiet", "--replSet", "rs0", "--bind_ip_all"]
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' | grep 1",
+          "mongosh --quiet --eval 'try { rs.status().ok } catch (e) { rs.initiate({_id:\"rs0\",members:[{_id:0,host:\"mongo:27017\"}]}).ok }' | grep 1",
         ]
       interval: 10s
       timeout: 5s
@@ -54,9 +70,24 @@ services:
     volumes:
       - redis-data:/data
 
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: "overleaf_history"
+      POSTGRES_USER: "overleaf"
+      POSTGRES_PASSWORD: "overleaf"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U overleaf -d overleaf_history"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
 volumes:
   sharelatex-data:
   sharelatex-web-data:
   sharelatex-clsi-data:
   mongo-data:
   redis-data:
+  postgres-data:

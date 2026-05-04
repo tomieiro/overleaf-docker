@@ -1,0 +1,8 @@
+#!/bin/bash
+export SHARELATEX_CONFIG=/etc/sharelatex/settings.js
+export SESSION_SECRET="${SESSION_SECRET:-change-this-session-secret-in-production}"
+export V1_HISTORY_HOST="${V1_HISTORY_HOST:-127.0.0.1}"
+export V1_HISTORY_PORT="${V1_HISTORY_PORT:-3100}"
+export V1_HISTORY_PASSWORD="${V1_HISTORY_PASSWORD:-password}"
+
+exec /sbin/setuser www-data /usr/bin/yarn --cwd /var/www/sharelatex workspace @overleaf/project-history start >> /var/log/sharelatex/project-history.log 2>&1

@@ -9,4 +9,10 @@ if command -v grunt >/dev/null 2>&1 && [ -f /var/www/sharelatex/Gruntfile.js ]; 
 else
   echo "Skipping legacy grunt migrations"
 fi
+
+if [ -n "$HISTORY_CONNECTION_STRING" ] && [ -d /var/www/sharelatex/services/history-v1 ]; then
+  echo "Running history-v1 migrations"
+  cd /var/www/sharelatex && yarn workspace overleaf-editor migrate
+fi
+
 echo "All migrations finished"

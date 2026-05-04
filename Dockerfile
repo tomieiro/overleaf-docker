@@ -29,7 +29,7 @@ RUN cd /var/www/sharelatex \
 &&    ln -sfn /usr/local/nvm/current/bin/npm /usr/bin/npm \
 &&    ln -sfn /usr/local/nvm/current/bin/grunt /usr/bin/grunt \
 &&    ln -sfn /usr/local/nvm/current/bin/yarn /usr/bin/yarn \
-&&    for service in web real-time document-updater clsi filestore docstore chat contacts notifications; do \
+&&    for service in web real-time document-updater clsi filestore docstore chat contacts notifications project-history history-v1; do \
         ln -sfn "services/${service}" "${service}"; \
       done \
   \
@@ -50,12 +50,17 @@ RUN mkdir -p \
 	      /var/www/sharelatex/services/clsi/compiles \
 	      /var/www/sharelatex/services/clsi/output \
 	      /var/www/sharelatex/services/clsi/uploads \
+	      /var/lib/sharelatex/history/blobs \
+	      /var/lib/sharelatex/history/chunks \
+	      /var/lib/sharelatex/history/project-blobs \
+	      /var/lib/sharelatex/history/zips \
 	      /var/www/sharelatex/services/web/data/uploads \
 &&  chown -R www-data:www-data \
 	      /var/www/sharelatex/services/clsi/cache \
 	      /var/www/sharelatex/services/clsi/compiles \
 	      /var/www/sharelatex/services/clsi/output \
 	      /var/www/sharelatex/services/clsi/uploads \
+	      /var/lib/sharelatex/history \
 	      /var/www/sharelatex/services/web/data
 
 # Links CLSI sycntex to its default location
