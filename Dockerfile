@@ -71,6 +71,7 @@ RUN ln -s /var/www/sharelatex/clsi/bin/synctex /opt/synctex
 # Copy runit service startup scripts to its location
 # --------------------------------------------------
 ADD ${baseDir}/runit /etc/service
+COPY ${baseDir}/scripts/auto_confirm_emails.mjs /opt/sharelatex/auto_confirm_emails.mjs
 RUN rm -rf \
       /etc/service/spelling-sharelatex \
       /etc/service/tags-sharelatex \
