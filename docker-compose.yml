@@ -39,6 +39,8 @@ services:
       V1_HISTORY_PASSWORD: "password"
       V1_HISTORY_HOST: "127.0.0.1"
       V1_HISTORY_PORT: "3100"
+      AUTO_EMAIL_CONFIRMATION: "${AUTO_EMAIL_CONFIRMATION:-1}"
+      AUTO_CONFIRM_EMAIL_INTERVAL_MS: "${AUTO_CONFIRM_EMAIL_INTERVAL_MS:-5000}"
     volumes:
       - sharelatex-data:/var/lib/sharelatex
       - sharelatex-web-data:/var/www/sharelatex/services/web/data

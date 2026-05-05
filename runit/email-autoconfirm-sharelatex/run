@@ -2,5 +2,11 @@
 export SHARELATEX_CONFIG=/etc/sharelatex/settings.js
 export MONGO_CONNECTION_STRING="${MONGO_CONNECTION_STRING:-${SHARELATEX_MONGO_URL:-${MONGO_URL:-mongodb://mongo/sharelatex}}}"
 export AUTO_CONFIRM_EMAIL_INTERVAL_MS="${AUTO_CONFIRM_EMAIL_INTERVAL_MS:-5000}"
+export AUTO_EMAIL_CONFIRMATION="${AUTO_EMAIL_CONFIRMATION:-0}"
+
+if [ "${AUTO_EMAIL_CONFIRMATION}" != "1" ]; then
+  echo "AUTO_EMAIL_CONFIRMATION is disabled, skipping email auto-confirmation loop"
+  exec sleep infinity
+fi
 
 exec /sbin/setuser www-data /usr/bin/yarn --cwd /var/www/sharelatex node /opt/sharelatex/auto_confirm_emails.mjs >> /var/log/sharelatex/email-autoconfirm.log 2>&1

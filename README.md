@@ -25,6 +25,12 @@ Se o repositorio ja estiver clonado:
 git submodule update --init --recursive
 ```
 
+Para atualizar para o commit mais recente do `main` do submodulo:
+
+```sh
+git submodule update --remote --init --recursive
+```
+
 ## Build
 
 ```sh
@@ -62,6 +68,17 @@ principal, e a base ja existe localmente:
 ```sh
 SHARELATEX_PORT=8080 docker compose up --build -d
 ```
+
+## Confirmacao automatica de email
+
+Este fork suporta confirmacao automatica de email para ambiente local.
+
+- `AUTO_EMAIL_CONFIRMATION=1`: habilita auto-confirmacao.
+- `AUTO_EMAIL_CONFIRMATION=0`: desabilita auto-confirmacao.
+- `AUTO_CONFIRM_EMAIL_INTERVAL_MS`: intervalo do job (padrao `5000` ms).
+
+No `docker-compose.yml` atual, `AUTO_EMAIL_CONFIRMATION` ja vem habilitado por
+padrao.
 
 ## Subir Localmente
 
