@@ -13,11 +13,54 @@ Este fork foi ajustado para o fluxo local:
 - Emails confirmados automaticamente no ambiente local.
 - Saida de compilacao LaTeX servida corretamente pelo nginx interno.
 
+## Clone com submodulos
+
+```sh
+git clone --recurse-submodules https://github.com/tomieiro/overleaf-docker.git
+```
+
+Se o repositorio ja estiver clonado:
+
+```sh
+git submodule update --init --recursive
+```
+
 ## Build
 
 ```sh
 make build-base
 make build-community
+```
+
+O comando `docker compose up --build` sozinho nao e suficiente em uma maquina
+limpa, porque ele so builda a imagem `sharelatex/sharelatex` definida no
+Compose. A imagem base `sharelatex/sharelatex-base:latest`, usada no `FROM` do
+Dockerfile principal, precisa existir antes.
+
+## Primeira subida
+
+Para um ambiente novo ou depois de alterar `Dockerfile-base`:
+
+```sh
+git submodule update --init --recursive
+make build-base
+SHARELATEX_PORT=8080 docker compose up --build -d
+```
+
+Isso faz:
+
+- sincroniza o submodulo `src/overleaf`
+- builda `sharelatex/sharelatex-base`
+- rebuilda `sharelatex/sharelatex`
+- sobe Overleaf, MongoDB, Redis e Postgres
+
+## Rebuild do app
+
+Se voce alterou apenas o codigo do Overleaf em `src/overleaf` ou o `Dockerfile`
+principal, e a base ja existe localmente:
+
+```sh
+SHARELATEX_PORT=8080 docker compose up --build -d
 ```
 
 ## Subir Localmente

@@ -8,10 +8,9 @@ ENV SHARELATEX_CONFIG=/etc/sharelatex/settings.js
 ENV DISABLE_SYNCTEX_BINARY_COPY=true
 
 
-# Checkout Overleaf Community Edition repo
-# ----------------------------------------
-RUN git clone https://github.com/overleaf/overleaf.git \
-	--depth 1 /var/www/sharelatex
+# Copy Overleaf Community Edition source from git submodule
+# ---------------------------------------------------------
+COPY src/overleaf /var/www/sharelatex
 
 
 # Copy build dependencies
