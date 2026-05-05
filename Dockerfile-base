@@ -90,6 +90,14 @@ RUN mkdir /install-tl-unx \
       setspace \
       xcolor \
       texcount \
+      booktabs \
+      enumitem \
+      tcolorbox \
+      titlesec \
+      tikzfill \
+      pdfcol \
+      listings \
+      listingsutf8 \
     \
 &&  rm -rf /install-tl-unx
 
