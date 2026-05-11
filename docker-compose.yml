@@ -33,6 +33,7 @@ services:
       OVERLEAF_EDITOR_PROJECT_BLOBS_BUCKET: "/var/lib/sharelatex/history/project-blobs"
       OVERLEAF_EDITOR_CHUNKS_BUCKET: "/var/lib/sharelatex/history/chunks"
       OVERLEAF_EDITOR_ZIPS_BUCKET: "/var/lib/sharelatex/history/zips"
+      OVERLEAF_FILESTORE_MIGRATION_LEVEL: "2"
       STAGING_PASSWORD: "password"
       OT_JWT_AUTH_KEY: "secureKey"
       OT_JWT_AUTH_ALG: "HS256"
